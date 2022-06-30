@@ -1,11 +1,20 @@
-export class CreateCustomerDto {
-    firstName: string;
-    lastName: string;
-    contactNumber: string;
+import { ApiProperty } from '@nestjs/swagger';
 
-    constructor(firstName: string, lastName: string, contactNumber: string) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.contactNumber = contactNumber;
-    }
+export class CreateCustomer {
+  id: number;
+
+  @ApiProperty()
+  firstName: string;
+
+  @ApiProperty()
+  lastName: string;
+
+  @ApiProperty({ required: false })
+  middleName = '';
+
+  organization = 1;
+
+  createdBy = 1;
+
+  updatedBy = 1;
 }
