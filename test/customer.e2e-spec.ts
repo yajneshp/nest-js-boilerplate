@@ -2,12 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { CreateCustomer } from 'src/customer/dto/create-customer.dto';
+import { CreateCustomerRequest } from 'src/customer/dto/create-customer-request.dto';
 import { UpdateCustomer } from 'src/customer/dto/update-customer.dto';
 
 describe('CustomerController (e2e)', () => {
   let app: INestApplication;
-  let customerData: CreateCustomer;
+  let customerData: CreateCustomerRequest;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -25,7 +25,7 @@ describe('CustomerController (e2e)', () => {
     };
     return await request(app.getHttpServer())
       .post('/customer')
-      .send(customer as CreateCustomer)
+      .send(customer as CreateCustomerRequest)
       .expect(201)
       .then(({ body }) => {
         customerData = body;

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Repository } from 'typeorm';
-import { CreateCustomer } from './dto/create-customer.dto';
+import { CreateCustomerRequest } from './dto/create-customer-request.dto';
 import { UpdateCustomer } from './dto/update-customer.dto';
 import { Customer_T } from './entities/customer.entity';
 
@@ -10,9 +11,11 @@ export class CustomerService {
   constructor(
     @InjectRepository(Customer_T)
     private customerRepository: Repository<Customer_T>,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
   ) {}
 
-  async create(createCustomer: CreateCustomer) {
+  async create(createCustomer: CreateCustomerRequest) {
     return await this.customerRepository.save(createCustomer);
   }
 
@@ -20,8 +23,8 @@ export class CustomerService {
     return this.customerRepository.find();
   }
 
-  findOne(id: number) {
-    return this.customerRepository.findOneBy({ id: id });
+  async findOne(id: number) {
+    return await this.customerRepository.findOneBy({ id: id });
   }
 
   async update(id: number, updateCustomerDto: UpdateCustomer) {

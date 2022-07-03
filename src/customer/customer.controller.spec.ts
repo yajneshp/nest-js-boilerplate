@@ -2,8 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { CustomerController } from './customer.controller';
 import { CustomerService } from './customer.service';
-import { CreateCustomer } from './dto/create-customer.dto';
+import { CreateCustomerRequest } from './dto/create-customer-request.dto';
 import { UpdateCustomer } from './dto/update-customer.dto';
+import { createRequest, createResponse } from 'node-mocks-http';
+import { WinstonModule } from 'nest-winston';
+import { format, transports } from 'winston';
 
 const customerArray = [
   {
@@ -36,6 +39,17 @@ describe('CustomerController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CustomerController],
+      imports: [
+        WinstonModule.forRoot({
+          format: format.combine(
+            format.json(),
+            format.prettyPrint(),
+            format.timestamp(),
+            format.splat(),
+          ),
+          transports: [new transports.Console()],
+        }),
+      ],
       providers: [
         CustomerService,
         {
@@ -59,7 +73,7 @@ describe('CustomerController', () => {
   });
 
   it('should create customer', async () => {
-    const createCustomerDto = plainToInstance(CreateCustomer, {
+    const createCustomerDto = plainToInstance(CreateCustomerRequest, {
       firstName: ' FName 2',
       lastName: 'LName 2',
     });
@@ -68,8 +82,15 @@ describe('CustomerController', () => {
   });
 
   it('should get customer by Id', async () => {
-    const customer = await controller.findOne(38);
-    expect(customer).toEqual(customerArray[0]);
+    const req = createRequest({
+      method: 'GET',
+      url: '/customer/38',
+      params: { id: 38 },
+      headers: { correlationid: 'asdf--123-dfdf' },
+    });
+    const res = createResponse();
+    await controller.findOne({ id: 38 }, res, req);
+    expect(res._getJSONData()).toEqual(customerArray[0]);
   });
 
   it('should get all customers', async () => {
@@ -82,12 +103,12 @@ describe('CustomerController', () => {
       firstName: ' FName 2',
       lastName: 'LName 2',
     });
-    const customer = await controller.update(38, updateCustomerDto);
+    const customer = await controller.update({ id: 38 }, updateCustomerDto);
     expect(customer).toEqual(customerArray[0]);
   });
 
   it('should delete customer', async () => {
-    const result = await controller.remove(38);
+    const result = await controller.remove({ id: 38 });
     expect(result).toBeNull();
   });
 });

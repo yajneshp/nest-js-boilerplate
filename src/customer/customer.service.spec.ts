@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { WinstonModule } from 'nest-winston';
 import { Repository } from 'typeorm';
+import { format, transports } from 'winston';
 import { CustomerService } from './customer.service';
-import { CreateCustomer } from './dto/create-customer.dto';
+import { CreateCustomerRequest } from './dto/create-customer-request.dto';
 import { Customer_T } from './entities/customer.entity';
 
 const customerArray = [
@@ -37,6 +39,17 @@ describe('CustomerService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [
+        WinstonModule.forRoot({
+          format: format.combine(
+            format.json(),
+            format.prettyPrint(),
+            format.timestamp(),
+            format.splat(),
+          ),
+          transports: [new transports.Console()],
+        }),
+      ],
       providers: [
         CustomerService,
         {
@@ -80,7 +93,7 @@ describe('CustomerService', () => {
 
   describe('create()', () => {
     it('should create customer', async () => {
-      const createCustomer = plainToInstance(CreateCustomer, {
+      const createCustomer = plainToInstance(CreateCustomerRequest, {
         firstName: ' FName 2',
         lastName: 'LName 2',
       });
